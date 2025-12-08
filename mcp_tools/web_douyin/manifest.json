@@ -1,0 +1,7 @@
+{
+  "name": "web-douyin",
+  "version": "1.0.0",
+  "description": "抖音网页版浏览器操作 MCP 工具",
+  "entry": "server.py"
+}
+

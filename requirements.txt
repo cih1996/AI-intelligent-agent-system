@@ -1,0 +1,12 @@
+openai>=1.0.0
+python-dotenv>=1.0.0
+httpx>=0.24.0
+requests>=2.31.0
+aiohttp>=3.9.0
+
+# Windows系统操作工具依赖
+pywin32>=306; sys_platform == 'win32'
+pyautogui>=0.9.54
+paddleocr>=2.7.0
+Pillow>=10.0.0
+

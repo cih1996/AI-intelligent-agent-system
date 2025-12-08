@@ -1,0 +1,238 @@
+{
+  "tools": [
+    {
+      "name": "system.get_windows",
+      "description": "获取当前所有窗口列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "include_minimized": {
+            "type": "boolean",
+            "description": "是否包含最小化的窗口，默认为true",
+            "default": true
+          }
+        }
+      }
+    },
+    {
+      "name": "system.window_close",
+      "description": "关闭指定窗口",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "window_title": {
+            "type": "string",
+            "description": "窗口标题（支持部分匹配）"
+          },
+          "hwnd": {
+            "type": "integer",
+            "description": "窗口句柄（如果提供则优先使用）"
+          }
+        },
+        "required": ["window_title"]
+      }
+    },
+    {
+      "name": "system.window_move",
+      "description": "移动指定窗口到指定位置",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "window_title": {
+            "type": "string",
+            "description": "窗口标题（支持部分匹配）"
+          },
+          "hwnd": {
+            "type": "integer",
+            "description": "窗口句柄（如果提供则优先使用）"
+          },
+          "x": {
+            "type": "integer",
+            "description": "目标X坐标"
+          },
+          "y": {
+            "type": "integer",
+            "description": "目标Y坐标"
+          }
+        },
+        "required": ["window_title", "x", "y"]
+      }
+    },
+    {
+      "name": "system.window_hide",
+      "description": "隐藏指定窗口",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "window_title": {
+            "type": "string",
+            "description": "窗口标题（支持部分匹配）"
+          },
+          "hwnd": {
+            "type": "integer",
+            "description": "窗口句柄（如果提供则优先使用）"
+          }
+        },
+        "required": ["window_title"]
+      }
+    },
+    {
+      "name": "system.window_show",
+      "description": "显示指定窗口",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "window_title": {
+            "type": "string",
+            "description": "窗口标题（支持部分匹配）"
+          },
+          "hwnd": {
+            "type": "integer",
+            "description": "窗口句柄（如果提供则优先使用）"
+          }
+        },
+        "required": ["window_title"]
+      }
+    },
+    {
+      "name": "system.window_minimize",
+      "description": "最小化指定窗口",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "window_title": {
+            "type": "string",
+            "description": "窗口标题（支持部分匹配）"
+          },
+          "hwnd": {
+            "type": "integer",
+            "description": "窗口句柄（如果提供则优先使用）"
+          }
+        },
+        "required": ["window_title"]
+      }
+    },
+    {
+      "name": "system.mouse_click",
+      "description": "在指定坐标执行鼠标点击",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "X坐标"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y坐标"
+          },
+          "button": {
+            "type": "string",
+            "description": "鼠标按钮：left, right, middle，默认为left",
+            "enum": ["left", "right", "middle"],
+            "default": "left"
+          },
+          "clicks": {
+            "type": "integer",
+            "description": "点击次数，默认为1",
+            "default": 1
+          }
+        },
+        "required": ["x", "y"]
+      }
+    },
+    {
+      "name": "system.keyboard_type",
+      "description": "模拟键盘输入文本",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "要输入的文本"
+          },
+          "interval": {
+            "type": "number",
+            "description": "每个字符之间的间隔时间（秒），默认为0.01",
+            "default": 0.01
+          }
+        },
+        "required": ["text"]
+      }
+    },
+    {
+      "name": "system.keyboard_press",
+      "description": "模拟按下键盘按键",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "要按下的按键，如 'enter', 'ctrl', 'alt', 'tab' 等"
+          },
+          "modifiers": {
+            "type": "array",
+            "description": "修饰键列表，如 ['ctrl', 'shift']",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["key"]
+      }
+    },
+    {
+      "name": "system.ocr",
+      "description": "对指定区域进行OCR文字识别",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "区域左上角X坐标"
+          },
+          "y": {
+            "type": "integer",
+            "description": "区域左上角Y坐标"
+          },
+          "width": {
+            "type": "integer",
+            "description": "区域宽度"
+          },
+          "height": {
+            "type": "integer",
+            "description": "区域高度"
+          },
+          "image_path": {
+            "type": "string",
+            "description": "图片文件路径（如果提供则从文件读取，否则从屏幕截图）"
+          }
+        }
+      }
+    },
+    {
+      "name": "system.shell_execute",
+      "description": "执行shell命令",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "要执行的命令"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "超时时间（秒），默认为30",
+            "default": 30
+          },
+          "cwd": {
+            "type": "string",
+            "description": "工作目录，默认为当前目录"
+          }
+        },
+        "required": ["command"]
+      }
+    }
+  ]
+}
+

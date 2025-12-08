@@ -1,0 +1,119 @@
+{
+  "tools": [
+    {
+      "name": "todo.add",
+      "description": "添加新的待办事项",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "待办事项标题"
+          },
+          "details": {
+            "type": "string",
+            "description": "待办事项详细信息"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "优先级"
+          },
+          "due_date": {
+            "type": "string",
+            "description": "截止日期（ISO 格式）"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "标签列表"
+          }
+        },
+        "required": ["title"]
+      }
+    },
+    {
+      "name": "todo.update",
+      "description": "更新现有待办事项",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "待办事项 ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "新标题"
+          },
+          "details": {
+            "type": "string",
+            "description": "新详细信息"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "新优先级"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "description": "新状态"
+          },
+          "due_date": {
+            "type": "string",
+            "description": "新截止日期（ISO 格式）"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "新标签列表"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "todo.list",
+      "description": "列出待办事项，支持按状态、优先级、标签过滤",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed", "all"],
+            "description": "过滤状态"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "过滤优先级"
+          },
+          "tag": {
+            "type": "string",
+            "description": "过滤标签"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制"
+          }
+        }
+      }
+    },
+    {
+      "name": "todo.remove",
+      "description": "删除待办事项",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "待办事项 ID"
+          }
+        },
+        "required": ["id"]
+      }
+    }
+  ]
+}
+

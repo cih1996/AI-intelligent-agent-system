@@ -1,0 +1,7 @@
+{
+  "name": "system-tool",
+  "version": "1.0.0",
+  "description": "Windows系统操作 MCP 工具",
+  "entry": "server.py"
+}
+

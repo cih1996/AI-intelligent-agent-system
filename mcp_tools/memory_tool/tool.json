@@ -1,0 +1,67 @@
+{
+  "tools": [
+    {
+      "name": "memory.write",
+      "description": "写入记忆，用于建立短期或长期记忆",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "记忆内容"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["short_term", "long_term"],
+            "description": "记忆类型"
+          },
+          "context": {
+            "type": "string",
+            "description": "上下文信息"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "标签列表"
+          },
+          "importance": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "重要性（1-10）"
+          }
+        },
+        "required": ["content"]
+      }
+    },
+    {
+      "name": "memory.load",
+      "description": "加载记忆，支持按类型、重要性、查询过滤",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["short_term", "long_term", "all"],
+            "description": "记忆类型"
+          },
+          "query": {
+            "type": "string",
+            "description": "搜索查询"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制"
+          },
+          "importance_min": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "最小重要性"
+          }
+        }
+      }
+    }
+  ]
+}
+

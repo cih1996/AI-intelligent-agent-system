@@ -1,0 +1,26 @@
+{
+  "name": "douyin-web-mcp",
+  "version": "1.0.0",
+  "description": "MCP工具 - 操作抖音网页版的浏览器扩展",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "mcp",
+    "douyin",
+    "browser",
+    "extension"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  }
+}
+

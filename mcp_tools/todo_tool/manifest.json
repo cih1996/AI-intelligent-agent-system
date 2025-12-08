@@ -1,0 +1,7 @@
+{
+  "name": "todo-tool",
+  "version": "1.0.0",
+  "description": "待办事项管理 MCP 工具",
+  "entry": "server.py"
+}
+

@@ -1,0 +1,65 @@
+{
+  "tools": [
+    {
+      "name": "knowledge.store",
+      "description": "存储知识条目，用于记录重要事实、偏好、长期内容、操作方法等",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "知识键，用于检索"
+          },
+          "content": {
+            "type": "string",
+            "description": "知识内容"
+          },
+          "category": {
+            "type": "string",
+            "description": "知识分类"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "标签列表"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "元数据"
+          }
+        },
+        "required": ["key", "content"]
+      }
+    },
+    {
+      "name": "knowledge.retrieve",
+      "description": "检索知识条目，支持精确匹配和模糊搜索",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "知识键（精确匹配）"
+          },
+          "query": {
+            "type": "string",
+            "description": "搜索查询（模糊匹配）"
+          },
+          "category": {
+            "type": "string",
+            "description": "过滤分类"
+          },
+          "tag": {
+            "type": "string",
+            "description": "过滤标签"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制"
+          }
+        }
+      }
+    }
+  ]
+}
+

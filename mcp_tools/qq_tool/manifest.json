@@ -1,0 +1,7 @@
+{
+  "name": "qq-tool",
+  "version": "1.0.0",
+  "description": "QQ消息管理 MCP 工具",
+  "entry": "server.py"
+}
+

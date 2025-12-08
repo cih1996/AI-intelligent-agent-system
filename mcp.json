@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "knowledge-tool": {
+      "url": "http://127.0.0.1:8000",
+      "transport": "streamable-http"
+    },
+    "memory-tool": {
+      "url": "http://127.0.0.1:8001",
+      "transport": "streamable-http"
+    },
+    "qq-tool": {
+      "url": "http://127.0.0.1:8002",
+      "transport": "streamable-http"
+    },
+    "system-tool": {
+      "url": "http://127.0.0.1:8003",
+      "transport": "streamable-http"
+    },
+    "task-tool": {
+      "url": "http://127.0.0.1:8004",
+      "transport": "streamable-http"
+    },
+    "todo-tool": {
+      "url": "http://127.0.0.1:8005",
+      "transport": "streamable-http"
+    },
+    "ui-tool": {
+      "url": "http://127.0.0.1:8006",
+      "transport": "streamable-http"
+    },
+    "web-douyin": {
+      "url": "http://127.0.0.1:8007",
+      "transport": "streamable-http"
+    }
+  }
+}

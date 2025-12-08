@@ -1,0 +1,69 @@
+{
+  "tools": [
+    {
+      "name": "qq.get_recent_contact",
+      "description": "获取最近消息列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "获取的消息数量，默认为10",
+            "default": 10
+          }
+        }
+      }
+    },
+    {
+      "name": "qq.send_group_msg",
+      "description": "发送群聊消息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "群组ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "要发送的消息内容（纯文本）"
+          }
+        },
+        "required": ["group_id", "message"]
+      }
+    },
+    {
+      "name": "qq.send_private_msg",
+      "description": "发送私聊消息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "用户ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "要发送的消息内容（纯文本）"
+          }
+        },
+        "required": ["user_id", "message"]
+      }
+    },
+    {
+      "name": "qq.publish_qzone",
+      "description": "发表QQ空间说说动态",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "要发表的动态内容"
+          }
+        },
+        "required": ["content"]
+      }
+    }
+  ]
+}
+

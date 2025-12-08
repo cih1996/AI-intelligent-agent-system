@@ -1,0 +1,96 @@
+{
+  "tools": [
+    {
+      "name": "douyin.get_search_results",
+      "description": "搜索指定关键词并获取搜索结果列表（包含视频链接、图片、作者、描述等信息）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "要搜索的关键词"
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    {
+      "name": "douyin.get_video_info",
+      "description": "获取当前播放视频的详细信息（播放进度、点赞量、评论数、作者信息等）",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "douyin.scroll",
+      "description": "自动滚动到下一个或上一个视频",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": ["next", "prev"],
+            "description": "滚动方向：next（下一个）或 prev（上一个）",
+            "default": "next"
+          }
+        }
+      }
+    },
+    {
+      "name": "douyin.like",
+      "description": "点赞当前正在播放的视频",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "douyin.get_page_info",
+      "description": "获取当前页面的基本信息（URL、标题、时间戳等）",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "douyin.open",
+      "description": "打开抖音网页版（如果浏览器未打开则自动打开）",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "douyin.navigate_to_url",
+      "description": "跳转到指定的URL（支持完整URL或相对路径）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "要跳转的URL地址（支持完整URL如 https://www.douyin.com，或相对路径如 /search/CS2）"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
+      "name": "douyin.toggle_comments",
+      "description": "打开或关闭当前视频的评论区",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "douyin.get_comments_list",
+      "description": "获取当前视频的评论区列表（包含昵称、评论内容等信息）",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,7 @@
+{
+  "name": "knowledge-tool",
+  "version": "1.0.0",
+  "description": "知识存储和检索 MCP 工具",
+  "entry": "server.py"
+}
+

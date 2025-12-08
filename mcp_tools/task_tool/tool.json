@@ -1,0 +1,83 @@
+{
+  "tools": [
+    {
+      "name": "tasks.log",
+      "description": "记录任务工作过程日志",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "description": "任务 ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "日志消息"
+          },
+          "level": {
+            "type": "string",
+            "enum": ["info", "warning", "error"],
+            "description": "日志级别"
+          },
+          "data": {
+            "type": "object",
+            "description": "附加数据"
+          }
+        },
+        "required": ["task_id", "message"]
+      }
+    },
+    {
+      "name": "tasks.status",
+      "description": "更新当前任务状态",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "description": "任务 ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["created", "running", "paused", "completed", "failed"],
+            "description": "任务状态"
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "进度百分比"
+          },
+          "message": {
+            "type": "string",
+            "description": "状态消息"
+          }
+        },
+        "required": ["task_id", "status"]
+      }
+    },
+    {
+      "name": "tasks.finish",
+      "description": "标记任务完成",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "description": "任务 ID"
+          },
+          "result": {
+            "type": "object",
+            "description": "任务结果"
+          },
+          "summary": {
+            "type": "string",
+            "description": "任务总结"
+          }
+        },
+        "required": ["task_id"]
+      }
+    }
+  ]
+}
+
