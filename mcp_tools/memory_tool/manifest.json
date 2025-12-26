@@ -1,7 +1,0 @@
-{
-  "name": "memory-tool",
-  "version": "1.0.0",
-  "description": "记忆管理 MCP 工具",
-  "entry": "server.py"
-}
-

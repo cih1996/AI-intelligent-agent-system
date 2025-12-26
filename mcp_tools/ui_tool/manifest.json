@@ -1,7 +1,0 @@
-{
-  "name": "ui-tool",
-  "version": "1.0.0",
-  "description": "UI 面板生成 MCP 工具",
-  "entry": "server.py"
-}
-

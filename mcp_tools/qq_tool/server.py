@@ -15,51 +15,19 @@ from urllib.parse import urlencode, quote
 class QQServer:
     """QQ 工具服务器"""
     
-    def __init__(self, config_dir: Path):
+    def __init__(self, data_dir: Path):
         """
         初始化服务器
         
         Args:
-            config_dir: 配置存储目录
+            data_dir: 数据存储目录（基础目录）
         """
-        self.config_dir = config_dir
-        self.config_file = config_dir / 'config.json'
-        self._load_config()
+        self.data_dir = data_dir
+        # token 和 host 从系统级参数中获取，不在这里初始化
+        self.api_base_url = None
+        self.token = None
     
-    def _load_config(self):
-        """加载配置文件"""
-        # 默认配置
-        default_config = {
-            "api_base_url": "http://127.0.0.1:3000",
-            "token": "Se&X@%V+u*uO(YH)"
-        }
-        
-        # 如果配置文件存在，读取配置
-        if self.config_file.exists():
-            try:
-                with open(self.config_file, 'r', encoding='utf-8') as f:
-                    user_config = json.load(f)
-                    # 合并配置，用户配置优先
-                    default_config.update(user_config)
-            except Exception as e:
-                print(f"[QQServer] 读取配置文件失败，使用默认配置: {e}")
-        else:
-            # 配置文件不存在，创建默认配置文件
-            try:
-                self.config_dir.mkdir(parents=True, exist_ok=True)
-                with open(self.config_file, 'w', encoding='utf-8') as f:
-                    json.dump(default_config, f, ensure_ascii=False, indent=2)
-                print(f"[QQServer] 已创建默认配置文件: {self.config_file}")
-            except Exception as e:
-                print(f"[QQServer] 创建配置文件失败: {e}")
-        
-        self.api_base_url = default_config.get("api_base_url", "http://127.0.0.1:3000")
-        self.token = default_config.get("token", "Se&X@%V+u*uO(YH)")
-        
-        # 确保URL不以斜杠结尾
-        self.api_base_url = self.api_base_url.rstrip('/')
-    
-    def _make_request(self, endpoint: str, method: str = "POST", data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _make_request(self, endpoint: str, method: str = "POST", data: Optional[Dict[str, Any]] = None, api_base_url: str = None, token: str = None) -> Dict[str, Any]:
         """
         发送HTTP请求
         
@@ -67,14 +35,25 @@ class QQServer:
             endpoint: API端点（如 "/get_recent_contact"）
             method: HTTP方法（GET/POST）
             data: 请求数据
+            api_base_url: API基础URL（从系统级参数获取）
+            token: 认证token（从系统级参数获取）
             
         Returns:
             响应结果字典
         """
-        url = f"{self.api_base_url}{endpoint}"
+        if not api_base_url or not token:
+            return {
+                "success": False,
+                "content": None,
+                "error": "缺少必需的配置参数: host 或 token。请在 mcp.json 中配置 context.host 和 context.token"
+            }
+        
+        # 确保URL不以斜杠结尾
+        api_base_url = api_base_url.rstrip('/')
+        url = f"{api_base_url}{endpoint}"
         headers = {
             "Content-Type": "application/json",
-            "authorization": "Bearer "+self.token
+            "authorization": "Bearer "+token
         }
         try:
             if method.upper() == "POST":
@@ -123,19 +102,42 @@ class QQServer:
         
         Args:
             tool_name: 工具名称
-            arguments: 工具参数
+            arguments: 工具参数（包含 _context 上下文对象，由 mcp_server.py 自动注入）
             
         Returns:
             工具执行结果
         """
+        # 从上下文对象中提取系统级参数（从 mcp.json 配置中获取）
+        context = arguments.get('_context', {})
+        token = context.get('token')
+        host = context.get('host')
+        
+        # 校验必需的上下文参数（根据 manifest.json 中的 requiredContext）
+        if not token:
+            return {
+                "success": False,
+                "content": None,
+                "error": "缺少必需的上下文参数: token。请在 ai/mcp.json 中配置 context.token"
+            }
+        
+        if not host:
+            return {
+                "success": False,
+                "content": None,
+                "error": "缺少必需的上下文参数: host。请在 ai/mcp.json 中配置 context.host"
+            }
+        
+        # 从参数中移除 _context，避免传递给具体的方法
+        arguments = {k: v for k, v in arguments.items() if k != '_context'}
+        
         if tool_name == "qq.get_recent_contact":
-            return self._get_recent_contact(arguments)
+            return self._get_recent_contact(arguments, host, token)
         elif tool_name == "qq.send_group_msg":
-            return self._send_group_msg(arguments)
+            return self._send_group_msg(arguments, host, token)
         elif tool_name == "qq.send_private_msg":
-            return self._send_private_msg(arguments)
+            return self._send_private_msg(arguments, host, token)
         elif tool_name == "qq.publish_qzone":
-            return self._publish_qzone(arguments)
+            return self._publish_qzone(arguments, host, token)
         else:
             return {
                 "success": False,
@@ -143,7 +145,7 @@ class QQServer:
                 "error": f"未知工具: {tool_name}"
             }
     
-    def _get_recent_contact(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_recent_contact(self, arguments: Dict[str, Any], api_base_url: str, token: str) -> Dict[str, Any]:
         """获取最近消息列表"""
         count = arguments.get("count", 10)
         
@@ -151,9 +153,9 @@ class QQServer:
             "count": count
         }
         
-        return self._make_request("/get_recent_contact", "POST", data)
+        return self._make_request("/get_recent_contact", "POST", data, api_base_url, token)
     
-    def _send_group_msg(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def _send_group_msg(self, arguments: Dict[str, Any], api_base_url: str, token: str) -> Dict[str, Any]:
         """发送群聊消息"""
         group_id = arguments.get("group_id")
         message = arguments.get("message")
@@ -187,9 +189,9 @@ class QQServer:
             "message": message_array
         }
         
-        return self._make_request("/send_group_msg", "POST", data)
+        return self._make_request("/send_group_msg", "POST", data, api_base_url, token)
     
-    def _send_private_msg(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def _send_private_msg(self, arguments: Dict[str, Any], api_base_url: str, token: str) -> Dict[str, Any]:
         """发送私聊消息"""
         user_id = arguments.get("user_id")
         message = arguments.get("message")
@@ -223,11 +225,15 @@ class QQServer:
             "message": message_array
         }
         
-        return self._make_request("/send_private_msg", "POST", data)
+        return self._make_request("/send_private_msg", "POST", data, api_base_url, token)
     
-    def _get_cookies(self) -> Dict[str, Any]:
+    def _get_cookies(self, api_base_url: str, token: str) -> Dict[str, Any]:
         """
         获取QQ cookies
+        
+        Args:
+            api_base_url: API基础URL
+            token: 认证token
         
         Returns:
             包含cookies和bkn的字典，如果失败返回None
@@ -236,7 +242,7 @@ class QQServer:
             "domain": "qzone.qq.com"
         }
         
-        result = self._make_request("/get_cookies", "POST", data)
+        result = self._make_request("/get_cookies", "POST", data, api_base_url, token)
         
         if result.get("success"):
             return result.get("content")
@@ -335,7 +341,7 @@ class QQServer:
             hash_value += (hash_value << 5) + ord(char)
         return hash_value & 2147483647
     
-    def _publish_qzone(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def _publish_qzone(self, arguments: Dict[str, Any], api_base_url: str, token: str) -> Dict[str, Any]:
         """发表QQ空间动态"""
         content = arguments.get("content")
         
@@ -347,7 +353,7 @@ class QQServer:
             }
         
         # 获取cookies
-        cookies_data = self._get_cookies()
+        cookies_data = self._get_cookies(api_base_url, token)
         if not cookies_data:
             return {
                 "success": False,
@@ -458,14 +464,14 @@ def create_server(data_dir: str = None) -> QQServer:
         QQServer 实例
     """
     if data_dir:
-        config_path = Path(data_dir)
+        data_path = Path(data_dir)
     else:
-        # 默认配置目录
+        # 默认数据目录
         plugin_dir = Path(__file__).parent
         project_root = plugin_dir.parent.parent
-        config_path = project_root / '.mcp_data' / 'qq_tool'
+        data_path = project_root / '.mcp_data' / 'qq_tool'
     
-    config_path.mkdir(parents=True, exist_ok=True)
+    data_path.mkdir(parents=True, exist_ok=True)
     
-    return QQServer(config_path)
+    return QQServer(data_path)
 

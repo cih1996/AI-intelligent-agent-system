@@ -1,0 +1,19 @@
+{
+  "tools": [
+    {
+      "name": "desktop_assistant.chat",
+      "description": "桌面操作助手，根据用户指令自动执行桌面操作任务",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "description": "用户的操作指令，例如：打开抖音搜索 CS2市场"
+          }
+        },
+        "required": ["instruction"]
+      }
+    }
+  ]
+}
+

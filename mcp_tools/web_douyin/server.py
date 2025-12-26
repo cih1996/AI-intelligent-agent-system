@@ -383,3 +383,6 @@ def create_server(data_dir: str = None) -> DouyinWebServer:
     """
     return DouyinWebServer()
 
+
+douyin_server = create_server()
+douyin_server.call_tool("douyin.open", {})

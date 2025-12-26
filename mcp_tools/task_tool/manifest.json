@@ -1,7 +1,0 @@
-{
-  "name": "task-tool",
-  "version": "1.0.0",
-  "description": "任务状态管理 MCP 工具",
-  "entry": "server.py"
-}
-

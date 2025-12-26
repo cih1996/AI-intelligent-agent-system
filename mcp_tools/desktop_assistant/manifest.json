@@ -1,0 +1,7 @@
+{
+  "name": "desktop-assistant",
+  "version": "1.0.0",
+  "description": "桌面操作助手 MCP 工具，基于 GPT-4o 和 JS 脚本执行引擎",
+  "entry": "server.py"
+}
+

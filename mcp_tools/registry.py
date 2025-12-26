@@ -68,17 +68,17 @@ class MCPRegistry:
         print(f"[MCP Registry] 发现 {len(plugin_names)} 个插件: {plugin_names}")
         return plugin_names
     
-    def load_plugin(self, plugin_name: str) -> Dict[str, Any]:
+    def load_plugin(self, dir_name: str) -> Dict[str, Any]:
         """
         加载单个 MCP 插件
         
         Args:
-            plugin_name: 插件目录名称
+            dir_name: 插件目录名称
             
         Returns:
             插件信息字典
         """
-        plugin_dir = self.tools_dir / plugin_name
+        plugin_dir = self.tools_dir / dir_name
         
         if not plugin_dir.exists():
             raise FileNotFoundError(f"插件目录不存在: {plugin_dir}")
@@ -91,6 +91,11 @@ class MCPRegistry:
         with open(manifest_file, 'r', encoding='utf-8') as f:
             manifest = json.load(f)
         
+        try:
+            plugin_name = manifest.get('name')
+        except Exception as e:
+            raise ValueError(f"插件 manifest.json 缺少 name 字段: {manifest_file}")
+
         # 读取 tool.json
         tool_file = plugin_dir / 'tool.json'
         if not tool_file.exists():

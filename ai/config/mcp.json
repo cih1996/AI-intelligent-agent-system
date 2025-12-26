@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "qq-tool": {
+      "url": "http://127.0.0.1:8000",
+      "transport": "streamable-http",
+      "context": {
+        "token": "Se&X@%V+u*uO(YH)",
+        "host": "http://127.0.0.1:3000"
+      }
+    },
+    "system-tool": {
+      "url": "http://127.0.0.1:8001",
+      "transport": "streamable-http"
+    },
+    "web-douyin": {
+      "url": "http://127.0.0.1:8002",
+      "transport": "streamable-http"
+    }
+  }
+}

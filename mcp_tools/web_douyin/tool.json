@@ -63,13 +63,13 @@
     },
     {
       "name": "douyin.navigate_to_url",
-      "description": "跳转到指定的URL（支持完整URL或相对路径）",
+      "description": "跳转到指定的URL并返回基本信息",
       "input_schema": {
         "type": "object",
         "properties": {
           "url": {
             "type": "string",
-            "description": "要跳转的URL地址（支持完整URL如 https://www.douyin.com，或相对路径如 /search/CS2）"
+            "description": "要跳转的URL地址（支持完整URL如 https://www.douyin.com）"
           }
         },
         "required": ["url"]

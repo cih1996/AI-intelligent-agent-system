@@ -35,6 +35,9 @@ class MCPServer:
         self.tool_handlers: Dict[str, Callable] = {}
         self.request_id = 0
         self.plugin_info = plugin_info or {}  # 保存插件信息（manifest等）
+        # 会话级别的上下文对象（在 initialize 时设置）
+        # 可以包含任意键值对，如 user_id, tenant_id, workspace_id 等
+        self.context: Optional[Dict[str, Any]] = None
         
     def register_tool(self, tool_def: Dict[str, Any], handler: Callable):
         """
@@ -51,12 +54,13 @@ class MCPServer:
         self.tools[tool_name] = tool_def
         self.tool_handlers[tool_name] = handler
     
-    async def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_request(self, request: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         处理 JSON-RPC 请求
         
         Args:
             request: JSON-RPC 请求
+            user_context: 用户上下文（包含 user_id, session_id 等），用于数据隔离
             
         Returns:
             JSON-RPC 响应
@@ -71,7 +75,7 @@ class MCPServer:
             elif method == 'tools/list':
                 return self._handle_list_tools(request_id, self.plugin_info)
             elif method == 'tools/call':
-                return await self._handle_call_tool(request_id, params)
+                return await self._handle_call_tool(request_id, params, user_context)
             elif method == 'ping':
                 return {'jsonrpc': '2.0', 'id': request_id, 'result': 'pong'}
             else:
@@ -95,20 +99,76 @@ class MCPServer:
             }
     
     def _handle_initialize(self, request_id: Optional[int], params: Dict[str, Any]) -> Dict[str, Any]:
-        """处理 initialize 请求"""
+        """
+        处理 initialize 请求
+        
+        从 params 中提取 context，保存到会话级别，用于后续所有工具调用的数据隔离
+        支持任意键值对，如 user_id, tenant_id, workspace_id 等
+        
+        如果manifest中定义了requiredContext，会验证必需的参数是否提供
+        """
+        # 从初始化参数中提取上下文对象（用于数据隔离）
+        # 只支持标准的 context 字段，从 mcp.json 配置中获取
+        context = params.get('context', {})
+        
+        # 验证必需的上下文参数（如果manifest中定义了requiredContext）
+        manifest = self.plugin_info.get('manifest', {})
+        required_context = manifest.get('requiredContext', {})
+        
+        if required_context:
+            missing_params = []
+            for param_name, param_def in required_context.items():
+                if param_def.get('required', False):
+                    if param_name not in context or not context[param_name]:
+                        missing_params.append(param_name)
+            
+            if missing_params:
+                return {
+                    'jsonrpc': '2.0',
+                    'id': request_id,
+                    'error': {
+                        'code': -32602,
+                        'message': f'Missing required context parameters: {", ".join(missing_params)}. Please configure them in mcp.json',
+                        'data': {
+                            'requiredContext': required_context,
+                            'missing': missing_params
+                        }
+                    }
+                }
+        
+        # 保存上下文对象到会话级别
+        if context:
+            self.context = context
+        
+        # 构建返回结果，包含插件信息
+        result = {
+            'protocolVersion': '2024-11-05',
+            'capabilities': {
+                'tools': {}
+            },
+            'serverInfo': {
+                'name': self.name,
+                'version': self.version
+            }
+        }
+        
+        # 从 plugin_info 中获取插件描述和 requiredContext
+        manifest = self.plugin_info.get('manifest', {})
+        if manifest:
+            # 添加插件描述
+            description = manifest.get('description')
+            if description:
+                result['serverInfo']['description'] = description
+            
+            # 添加必需的上下文参数信息（requiredContext）
+            required_context = manifest.get('requiredContext')
+            if required_context:
+                result['requiredContext'] = required_context
+        
         return {
             'jsonrpc': '2.0',
             'id': request_id,
-            'result': {
-                'protocolVersion': '2024-11-05',
-                'capabilities': {
-                    'tools': {}
-                },
-                'serverInfo': {
-                    'name': self.name,
-                    'version': self.version
-                }
-            }
+            'result': result
         }
     
     def _handle_list_tools(self, request_id: Optional[int], plugin_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -128,11 +188,17 @@ class MCPServer:
         
         # 在顶层附加插件信息（不破坏 MCP 标准，作为额外字段）
         if plugin_info:
-            result['plugin'] = {
+            plugin_metadata = {
                 'name': plugin_info.get('name', self.name),
                 'version': plugin_info.get('version', self.version),
                 'description': plugin_info.get('description', '')
             }
+            # 如果manifest中有requiredContext，也包含在plugin信息中
+            manifest = plugin_info.get('manifest', {})
+            if 'requiredContext' in manifest:
+                plugin_metadata['requiredContext'] = manifest['requiredContext']
+            
+            result['plugin'] = plugin_metadata
         
         return {
             'jsonrpc': '2.0',
@@ -140,10 +206,23 @@ class MCPServer:
             'result': result
         }
     
-    async def _handle_call_tool(self, request_id: Optional[int], params: Dict[str, Any]) -> Dict[str, Any]:
-        """处理 tools/call 请求"""
+    async def _handle_call_tool(self, request_id: Optional[int], params: Dict[str, Any], request_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        处理 tools/call 请求
+        
+        Args:
+            request_id: 请求ID
+            params: 请求参数
+            request_context: 未使用（保留接口兼容性）
+        """
         tool_name = params.get('name')
         arguments = params.get('arguments', {})
+        
+        # mcp_server.py 只负责原封不动地传递数据
+        # 将会话级别的上下文（从 initialize 中获取）注入到工具参数中
+        # 每个工具的 server.py 自己负责从 _context 中提取并校验必需的参数
+        if self.context:
+            arguments['_context'] = self.context
         
         if not tool_name:
             return {
@@ -291,6 +370,9 @@ class HTTPMCPServer:
         Returns:
             (status_code, headers, body)
         """
+        # mcp_server.py 只负责原封不动地传递数据，不做任何上下文提取或处理
+        # 上下文参数应该通过 initialize 时的 context 字段传递（从 mcp.json 配置中获取）
+        
         # 设置 CORS 头
         cors_headers = {
             'Access-Control-Allow-Origin': '*',
@@ -333,7 +415,8 @@ class HTTPMCPServer:
             # 处理 JSON-RPC 请求（标准 MCP HTTP 端点）
             try:
                 request = json.loads(body.decode('utf-8'))
-                response = await self.mcp_server.handle_request(request)
+                # 原封不动传递请求，不做任何上下文提取或处理
+                response = await self.mcp_server.handle_request(request, None)
                 return (200, cors_headers, json.dumps(response, ensure_ascii=False).encode('utf-8'))
             except json.JSONDecodeError as e:
                 error_response = {
@@ -366,7 +449,8 @@ class HTTPMCPServer:
                 else:
                     # POST 请求处理 JSON-RPC
                     request = json.loads(body.decode('utf-8'))
-                    response = await self.mcp_server.handle_request(request)
+                    # 原封不动传递请求，不做任何上下文提取或处理
+                    response = await self.mcp_server.handle_request(request, None)
                     return (200, cors_headers, json.dumps(response, ensure_ascii=False).encode('utf-8'))
             except json.JSONDecodeError as e:
                 error_response = {
@@ -416,13 +500,8 @@ class HTTPMCPServer:
         site = web.TCPSite(runner, self.host, self.port)
         await site.start()
         
-        print(f"[MCP Server] {self.mcp_server.name} v{self.mcp_server.version} 已启动")
-        print(f"[MCP Server] HTTP 服务监听: http://{self.host}:{self.port}")
-        print(f"[MCP Server] 健康检查: http://{self.host}:{self.port}/health")
-        print(f"[MCP Server] 工具列表: http://{self.host}:{self.port}/tools")
-        print(f"[MCP Server] MCP 端点: http://{self.host}:{self.port}/mcp")
-        print(f"[MCP Server] MCP HTTP 传输: http://{self.host}:{self.port}/message (用于 Cursor streamable-http)")
-        
+        print(f"[MCP Server] {self.mcp_server.name} v{self.mcp_server.version} 启动成功 , HTTP 服务监听: http://{self.host}:{self.port}")
+
         # 保持运行
         try:
             await asyncio.Event().wait()
@@ -443,21 +522,25 @@ def create_mcp_server_from_plugin(plugin_info: Dict[str, Any], host: str = '127.
     Returns:
         HTTPMCPServer 实例
     """
-    plugin_name = plugin_info['name']
+    plugin_name = plugin_info['name']  # 目录名（如 qq_tool）
     tools = plugin_info['tools']
     server_instance = plugin_info['server']
     manifest = plugin_info.get('manifest', {})
     
-    # 准备插件信息（用于附加到工具列表）
+    # 使用 manifest.json 中的 name（如 qq-tool），如果没有则使用目录名
+    manifest_name = manifest.get('name', plugin_name)
+    
+    # 准备插件信息（用于附加到工具列表和验证）
     plugin_metadata = {
-        'name': manifest.get('name', plugin_name),
+        'name': manifest_name,
         'version': manifest.get('version', '1.0.0'),
-        'description': manifest.get('description', '')
+        'description': manifest.get('description', ''),
+        'manifest': manifest  # 包含完整的manifest，包括requiredContext
     }
     
-    # 创建 MCP 服务器（传递插件信息）
+    # 创建 MCP 服务器（使用 manifest.json 中的 name 和 version）
     mcp_server = MCPServer(
-        name=plugin_name, 
+        name=manifest_name,  # 使用 manifest.json 中的 name，而不是目录名
         version=manifest.get('version', '1.0.0'),
         plugin_info=plugin_metadata
     )

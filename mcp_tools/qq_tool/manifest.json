@@ -2,6 +2,18 @@
   "name": "qq-tool",
   "version": "1.0.0",
   "description": "QQ消息管理 MCP 工具",
-  "entry": "server.py"
+  "entry": "server.py",
+  "requiredContext": {
+    "token": {
+      "type": "string",
+      "description": "QQ机器人token",
+      "required": true
+    },
+    "host": {
+      "type": "string",
+      "description": "QQ机器人接口地址",
+      "required": true
+    }
+  }
 }
 

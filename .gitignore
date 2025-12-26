@@ -98,3 +98,6 @@ secrets.json
 bak/
 backup/
 
+# 其它产生的临时目录
+.memory/
+conversations/
